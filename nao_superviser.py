@@ -10,10 +10,12 @@ class Nao():
         self.timestep = int(self.supervisor.getBasicTimeStep())
         self.Motors = self.__initMotors__()
         self.Sensors = self.__initSensors__()
+        self.PosSensors = self.__initPositionSensors__()
         self.WB_SUPERVISOR_SIMULATION_MODE_PAUSE = 0
         self.SIMULATION_MODE_REAL_TIME = 1
         self.WB_SUPERVISOR_SIMULATION_MODE_FAST = 2
         self.episodeGoalCoordinate = None
+
 
         
     def __stopSimulation__(self):
@@ -163,34 +165,88 @@ class Nao():
 
     def __observe__(self):
         return {
-            'RFRB':self.Sensors['RFoot/Bumper/Right'].getValue(),
-            'RFLB':self.Sensors['RFoot/Bumper/Left'].getValue(),
-            'LFRB':self.Sensors['LFoot/Bumper/Right'].getValue(),
-            'LFLB':self.Sensors['LFoot/Bumper/Left'].getValue(),
-            'RFFS':self.Sensors['RFoot/ForceSensor'].getValues(),
-            'LFFS':self.Sensors['LFoot/ForceSensor'].getValues(),
+            'RFoot/Bumper/Right':self.Sensors['RFoot/Bumper/Right'].getValue(),
+            'RFoot/Bumper/Left':self.Sensors['RFoot/Bumper/Left'].getValue(),
+            'LFoot/Bumper/Right':self.Sensors['LFoot/Bumper/Right'].getValue(),
+            'LFoot/Bumper/Left':self.Sensors['LFoot/Bumper/Left'].getValue(),
+            'RFoot/ForceSensor':self.Sensors['RFoot/ForceSensor'].getValues(),
+            'LFoot/ForceSensor':self.Sensors['LFoot/ForceSensor'].getValues(),
             'GPS':self.Sensors['GPS'].getValues(),
-            'ACCL':self.Sensors['Accelerometer'].getValues()
+            'Accelerometer':self.Sensors['Accelerometer'].getValues()
         }
 
     def __act__(self, command):
-        """will perform <command> in following <time_step>."""
         for index, motor in enumerate(self.Motors):
             motor.setVelocity(command[index])
 
+    def __initPositionSensors__(self):
+        posSensorDictionary = {
+            'LAnklePitchS':self.supervisor.getDevice('LAnklePitchS'),
+            'LAnkleRollS':self.supervisor.getDevice('LAnkleRollS'),
+            'LElbowRollS':self.supervisor.getDevice('LElbowRollS'),
+            'LElbowYawS':self.supervisor.getDevice('LElbowYawS'),
+            'LHipPitchS':self.supervisor.getDevice('LHipPitchS'),
+            'LHipRollS':self.supervisor.getDevice('LHipRollS'),
+            'LHipYawPitchS':self.supervisor.getDevice('LHipYawPitchS'),
+            'LKneePitchS':self.supervisor.getDevice('LKneePitchS'),
+            'LShoulderPitchS':self.supervisor.getDevice('LShoulderPitchS'),
+            'LShoulderRollS':self.supervisor.getDevice('LShoulderRollS'),
+            'LWristYawS':self.supervisor.getDevice('LWristYawS'),
+            'RAnklePitchS':self.supervisor.getDevice('RAnklePitchS'),
+            'RAnkleRollS':self.supervisor.getDevice('RAnkleRollS'),
+            'RElbowRollS':self.supervisor.getDevice('RElbowRollS'),
+            'RElbowYawS':self.supervisor.getDevice('RElbowYawS'),
+            'RHipPitchS':self.supervisor.getDevice('RHipPitchS'),
+            'RHipRollS':self.supervisor.getDevice('RHipRollS'),
+            'RHipYawPitchS':self.supervisor.getDevice('RHipYawPitchS'),
+            'RKneePitchS':self.supervisor.getDevice('RKneePitchS'),
+            'RShoulderPitchS':self.supervisor.getDevice('RShoulderPitchS'),
+            'RShoulderRollS':self.supervisor.getDevice('RShoulderRollS'),
+            'RWristYawS':self.supervisor.getDevice('RWristYawS'),
+        }
+        for sensorName,sensor in posSensorDictionary.items():
+            sensor.enable(self.timestep)
+        return posSensorDictionary
+
     def __jointsEstimatedRotation__(self):
-        pass
+        """values measured in radian unit"""
+        return {
+            'LAnklePitchS':self.PosSensors['LAnklePitchS'].getValue(),
+            'LAnkleRollS':self.PosSensors['LAnkleRollS'].getValue(),
+            'LElbowRollS':self.PosSensors['LElbowRollS'].getValue(),
+            'LElbowYawS':self.PosSensors['LElbowYawS'].getValue(),
+            'LHipPitchS':self.PosSensors['LHipPitchS'].getValue(),
+            'LHipRollS':self.PosSensors['LHipRollS'].getValue(),
+            'LHipYawPitchS':self.PosSensors['LHipYawPitchS'].getValue(),
+            'LKneePitchS':self.PosSensors['LKneePitchS'].getValue(),
+            'LShoulderPitchS':self.PosSensors['LShoulderPitchS'].getValue(),
+            'LShoulderRollS':self.PosSensors['LShoulderRollS'].getValue(),
+            'LWristYawS':self.PosSensors['LWristYawS'].getValue(),
+            'RAnklePitchS':self.PosSensors['RAnklePitchS'].getValue(),
+            'RAnkleRollS':self.PosSensors['RAnkleRollS'].getValue(),
+            'RElbowRollS':self.PosSensors['RElbowRollS'].getValue(),
+            'RElbowYawS':self.PosSensors['RElbowYawS'].getValue(),
+            'RHipPitchS':self.PosSensors['RHipPitchS'].getValue(),
+            'RHipRollS':self.PosSensors['RHipRollS'].getValue(),
+            'RHipYawPitchS':self.PosSensors['RHipYawPitchS'].getValue(),
+            'RKneePitchS':self.PosSensors['RKneePitchS'].getValue(),
+            'RShoulderPitchS':self.PosSensors['RShoulderPitchS'].getValue(),
+            'RShoulderRollS':self.PosSensors['RShoulderRollS'].getValue(),
+            'RWristYawS':self.PosSensors['RWristYawS'].getValue(),
+        }
+
 
     def __reward__(self, state):
-        # termination conditions
-        is_done_at_t = None # will use force sensors of the soles
-        # reward function criterion
-        reward_t = velocity_in_goal_direction - 3*displacement_in_lateral_goal_direction**2 - 50*center_of_mass_displacement + 25*total_episode_time_in_term_of_samples/total_episode_time \
-                    - 0.02*norm_2_squared_all_joint_velocity_previous_time
-        return reward_t, is_done_at_t
+        # # termination conditions
+        # is_done_at_t = None # will use force sensors of the soles
+        # # reward function criterion
+        # reward_t = velocity_in_goal_direction - 3*displacement_in_lateral_goal_direction**2 - 50*center_of_mass_displacement + 25*total_episode_time_in_term_of_samples/total_episode_time \
+        #             - 0.02*norm_2_squared_all_joint_velocity_previous_time
+        # return reward_t, is_done_at_t
+        pass
 
     def __startNewEpisode__(self):
         # pick goal coordinate here
-        self.episodeGoalCoordinate = None
+        # self.episodeGoalCoordinate = None
         pass
 
